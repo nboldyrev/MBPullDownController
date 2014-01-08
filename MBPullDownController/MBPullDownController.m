@@ -76,7 +76,7 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	_closeDragOffsetPercentage = kDefaultCloseDragOffsetPercentage;
 	_backgroundView = [MBPullDownControllerBackgroundView new];
     
-    _backgroundView.backgroundColor = [UIColor greenColor];
+    //_backgroundView.backgroundColor = [UIColor greenColor];
 }
 
 - (void)loadView {
