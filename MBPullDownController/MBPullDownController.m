@@ -75,6 +75,8 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	_openDragOffsetPercentage = kDefaultOpenDragOffsetPercentage;
 	_closeDragOffsetPercentage = kDefaultCloseDragOffsetPercentage;
 	_backgroundView = [MBPullDownControllerBackgroundView new];
+    
+    _backgroundView.backgroundColor = [UIColor greenColor];
 }
 
 - (void)loadView {
@@ -92,7 +94,7 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 }
 
 - (void)dealloc {
-	[self cleanUpScrollView:[self scrollView]];
+	[self cleanUpControllerScrollView:self.frontController];
 }
 
 #pragma mark - Layout
@@ -228,22 +230,48 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	} else {
 		[scrollView setContentOffset:CGPointMake(0.f, -offset)];
 	}
+    if(open){
+        if([self.frontController respondsToSelector:@selector(setDisabled)]){
+            [self.frontController performSelector:@selector(setDisabled)];
+        }
+    }
+    else{
+        if([self.frontController respondsToSelector:@selector(setEnabled)]){
+            [self.frontController performSelector:@selector(setEnabled)];
+        }
+
+    }
+    //disable bottom view?
+//    if(open){
+//        self.frontController.view.exclusiveTouch = YES;
+//    }
 }
 
 #pragma mark - Container controller
-
+- (UIScrollView *)scrollViewForController:(UIViewController *)controller{
+    if([controller respondsToSelector:@selector(scrollView)]){
+        return (UIScrollView *)[controller performSelector:@selector(scrollView)];
+    }
+    else{
+        return (UIScrollView *)controller.view;
+    }
+    
+}
 - (void)changeFrontControllerFrom:(UIViewController *)current to:(UIViewController *)new {
+    
 
+    
+    
 	[current removeFromParentViewController];
-	[self cleanUpScrollView:(UIScrollView *)current.view];
+	[self cleanUpControllerScrollView:current];
 	[current.view removeFromSuperview];
 	
 	if (new) {
 		[self addChildViewController:new];
 		UIView *containerView = self.view;
 		UIView *newView = new.view;
-		NSAssert(!newView || [newView isKindOfClass:[UIScrollView class]],
-				 @"The front controller's view is not a UIScrollView subclass.");
+//		NSAssert(newView /*|| [newView isKindOfClass:[UIScrollView class]]*/,
+//				 @"The front controller's view is nil.");
 		if (newView) {
 			newView.frame = containerView.bounds;
 			[containerView addSubview:newView];
@@ -251,7 +279,7 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 		}
 	}
 	
-	[self prepareScrollView:(UIScrollView *)new.view];
+	[self prepareControllerScrollView:new];
 	[self setOpen:self.open animated:NO];
 }
 
@@ -286,7 +314,7 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	UIScrollView *scrollView = [self scrollView];
 	if (scrollView && backgroundView) {
 		backgroundView.frame = containerView.bounds;
-		[containerView insertSubview:backgroundView belowSubview:scrollView];
+		[containerView insertSubview:backgroundView belowSubview:self.frontController.view];
 		[self updateBackgroundViewForScrollOfset:scrollView.contentOffset];
 	}
 }
@@ -300,24 +328,26 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 #pragma mark - ScrollView
 
 - (UIScrollView *)scrollView {
-	return (UIScrollView *)self.frontController.view;
+    return [self scrollViewForController:self.frontController];
 }
-
-- (void)prepareScrollView:(UIScrollView *)scrollView {
+- (void)prepareControllerScrollView:(UIViewController *)controller {
+    UIScrollView * scrollView = (UIScrollView *)[self scrollViewForController:controller];
 	if (scrollView) {
 		scrollView.backgroundColor = [UIColor clearColor];
 		scrollView.alwaysBounceVertical = YES;
 		[self registerForScrollViewKVO:scrollView];
-		[self addGestureRecognizersToScrollView:scrollView];
+		[self addGestureRecognizersToView:controller.view];
 		[self initializeBackgroundView];
 	}
 }
 
-- (void)cleanUpScrollView:(UIScrollView *)scrollView {
+- (void)cleanUpControllerScrollView:(UIViewController *)controller {
+    UIScrollView * scrollView = (UIScrollView *)[self scrollViewForController:controller];
+
 	if (scrollView) {
 		[self unregisterFromScrollViewKVO:scrollView];
 		[self.backgroundView removeFromSuperview];
-		[self removeGesureRecognizersFromScrollView:scrollView];
+		[self removeGesureRecognizersFromView:controller.view];
 	}
 }
 
@@ -331,22 +361,24 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 		if (enabled && offset.y > [self computedCloseDragOffset] - self.view.bounds.size.height + self.openBottomOffset) {
 			[self setOpen:NO animated:YES];
 		} else {
-			[self setOpen:YES animated:YES];
+//			[self setOpen:YES animated:YES];
+        [self setOpen:(abs(offset.y) == (int)[self scrollView].bounds.size.height - self.openBottomOffset) ? NO : YES animated:YES];
+
 		}
 	}
 }
 
 #pragma mark - Gestures
 
-- (void)addGestureRecognizersToScrollView:(UIScrollView *)scrollView {
+- (void)addGestureRecognizersToView:(UIView  *)view {
 	MBPullDownControllerTapUpRecognizer *tapUp;
 	tapUp = [[MBPullDownControllerTapUpRecognizer alloc] initWithTarget:self action:@selector(tapUp:)];
-	[scrollView addGestureRecognizer:tapUp];
+	[view addGestureRecognizer:tapUp];
 	self.tapUpRecognizer = tapUp;
 }
 
-- (void)removeGesureRecognizersFromScrollView:(UIScrollView *)scrollView {
-	[scrollView removeGestureRecognizer:self.tapUpRecognizer];
+- (void)removeGesureRecognizersFromView:(UIView *)view {
+	[view removeGestureRecognizer:self.tapUpRecognizer];
 }
 
 - (void)tapUp:(MBPullDownControllerTapUpRecognizer *)recognizer {
@@ -420,6 +452,7 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 		self.cancelsTouchesInView = NO;
 		self.delaysTouchesBegan = NO;
 		self.delaysTouchesEnded = NO;
+        
 	}
 	return self;
 }
