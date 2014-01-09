@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.homepage     = "http://www.bukovinski.com"
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { 'Matej Bukovinski' => 'matej@bukovinski.com' }
-  s.source       = { :git => "https://github.com/nboldyrev/MBPullDownController.git", :tag => s.version.to_s }
+  s.source       = { :git => "https://github.com/nboldyrev/MBPullDownController.git" }
   s.source_files = 'MBPullDownController/*.{h,m}'
   s.framework    = "QuartzCore"
   s.platform     = :ios
