@@ -189,6 +189,9 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	[self setOpen:open animated:NO];
 }
 
+
+
+
 - (void)setOpen:(BOOL)open animated:(BOOL)animated {
 	if (open != _open) {
 		[self willChangeValueForKey:@"open"];
@@ -201,6 +204,31 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 		return;
 	}
 	
+    if([self.frontController conformsToProtocol:@protocol(MBPullDownChildController)]){
+        if(open){
+            if([self.frontController respondsToSelector:@selector(pullDownWillOpenAnimated:)]){
+                [(id<MBPullDownChildController>)self.frontController pullDownWillOpenAnimated:animated];
+            }
+        }
+        else{
+            if([self.frontController respondsToSelector:@selector(pullDownWillCloseAnimated:)]){
+                [(id<MBPullDownChildController>)self.frontController pullDownWillCloseAnimated:animated];
+            }
+        }
+    }
+    if([self.backController conformsToProtocol:@protocol(MBPullDownChildController)]){
+        if(open){
+            if([self.backController respondsToSelector:@selector(pullDownWillOpenAnimated:)]){
+                [(id<MBPullDownChildController>)self.backController pullDownWillOpenAnimated:animated];
+            }
+        }
+        else{
+            if([self.backController respondsToSelector:@selector(pullDownWillCloseAnimated:)]){
+                [(id<MBPullDownChildController>)self.backController pullDownWillCloseAnimated:animated];
+            }
+        }
+    }
+
 	CGFloat offset = open ? self.view.bounds.size.height - self.openBottomOffset : self.closedTopOffset;
 	CGPoint sOffset = scrollView.contentOffset;
 	// Set content inset (no animation)
@@ -223,6 +251,7 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	}
 	
 	// Move the content
+    
 	if (animated) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[scrollView setContentOffset:CGPointMake(0.f, -offset) animated:YES];
@@ -230,21 +259,36 @@ static CGFloat const kDefaultCloseDragOffsetPercentage = .05;
 	} else {
 		[scrollView setContentOffset:CGPointMake(0.f, -offset)];
 	}
-    if(open){
-        if([self.frontController respondsToSelector:@selector(setDisabled)]){
-            [self.frontController performSelector:@selector(setDisabled)];
+    if([self.frontController conformsToProtocol:@protocol(MBPullDownChildController)]){
+        if(open){
+            if([self.frontController respondsToSelector:@selector(pullDownDidOpenAnimated:)]){
+                [(id<MBPullDownChildController>)self.frontController pullDownDidOpenAnimated:animated];
+            }
+        }
+        else{
+            if([self.frontController respondsToSelector:@selector(pullDownDidCloseAnimated:)]){
+                [(id<MBPullDownChildController>)self.frontController pullDownDidCloseAnimated:animated];
+            }
         }
     }
-    else{
-        if([self.frontController respondsToSelector:@selector(setEnabled)]){
-            [self.frontController performSelector:@selector(setEnabled)];
+    if([self.backController conformsToProtocol:@protocol(MBPullDownChildController)]){
+        if(open){
+            if([self.backController respondsToSelector:@selector(pullDownDidOpenAnimated:)]){
+                [(id<MBPullDownChildController>)self.backController pullDownDidOpenAnimated:animated];
+            }
         }
-
+        else{
+            if([self.backController respondsToSelector:@selector(pullDownDidCloseAnimated:)]){
+                [(id<MBPullDownChildController>)self.backController pullDownDidCloseAnimated:animated];
+            }
+        }
     }
-    //disable bottom view?
-//    if(open){
-//        self.frontController.view.exclusiveTouch = YES;
-//    }
+    
+    if([self.frontController conformsToProtocol:@protocol(MBPullDownChildController)]){
+        if([self.frontController respondsToSelector:@selector(setControllerViewEnabled:)]){
+            [(id<MBPullDownChildController>)self.frontController setControllerViewEnabled:!open];
+        }
+    }
 }
 
 #pragma mark - Container controller

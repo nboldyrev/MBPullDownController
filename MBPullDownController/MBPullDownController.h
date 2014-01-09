@@ -29,6 +29,21 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@protocol MBPullDownChildController <NSObject>
+
+@optional
+-(void)pullDownWillOpenAnimated:(BOOL)animated;
+-(void)pullDownDidOpenAnimated:(BOOL)animated;
+-(void)pullDownWillCloseAnimated:(BOOL)animated;
+-(void)pullDownDidCloseAnimated:(BOOL)animated;
+
+
+// used only for front view obviously
+-(UIScrollView *)controllerScrollView;
+-(void)setControllerViewEnabled:(BOOL)enabled;
+
+@end
+
 
 @interface MBPullDownController : UIViewController
 
