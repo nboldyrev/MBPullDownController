@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "MBPullDownController"
-  s.version      = "1.1"
+  s.version      = "1.1.1"
   s.summary      = "An iOS container view controller for pullable scroll view interfaces."
   s.description  = <<-DESC
                     MBPullDownController accepts two view controllers, which it presents one above the other. 
@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.homepage     = "http://www.bukovinski.com"
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { 'Matej Bukovinski' => 'matej@bukovinski.com' }
-  s.source       = { :git => "https://github.com/matej/MBPullDownController.git", :tag => s.version.to_s }
+  s.source       = { :git => "https://github.com/nboldyrev/MBPullDownController.git", :tag => s.version.to_s }
   s.source_files = 'MBPullDownController/*.{h,m}'
   s.framework    = "QuartzCore"
   s.platform     = :ios
